@@ -13,7 +13,7 @@ Examples:
 find("otter", "rock")
 otter outer router routes routs rots rocs rock 
 ```
- - in 0.2 seconds
+in 0.2 seconds
 
 
 
@@ -21,7 +21,7 @@ otter outer router routes routs rots rocs rock
 find("stunning", "hello")
 stunning sunning cunning canning caning casing basing basin basil bail hail hall hallo hello 
 ```
- - in 0.53 seconds
+in 0.53 seconds
  
 ```
 findLongest("flexing")
