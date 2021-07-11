@@ -53,45 +53,6 @@ def getWordsToCheck(startingWords, seenWords, order):
                     wordsToCheck[neighbor] = word + " " + startingWords[word]
     return wordsToCheck
 
-
-def findLongest(startingWords, seenWords = [""]):
-    wordsToCheck = getWordsToCheck(startingWords, seenWords)
-    
-    if len(wordsToCheck) == 0:
-        return "END"
-    else:
-        print(len(wordsToCheck))
-    
-    seenWords.extend(list(wordsToCheck.keys()))
-    x = findLongest(wordsToCheck, seenWords)
-    if x == "END":
-        return wordsToCheck
-    else:
-        return x
-
-
-#print(findLongest({"card" : ""}))
-
-def find(startingWords, endWord, seenWords):
-    wordsToCheck = getWordsToCheck(startingWords, seenWords)
-    
-    if endWord in wordsToCheck:
-        
-        return wordsToCheck[endWord] + endWord
-    else:
-        print(len(wordsToCheck))
-        if len(wordsToCheck) == 0:
-            return "END"
-            
-        seenWords.extend(list(wordsToCheck.keys()))
-        x = find(wordsToCheck, endWord, seenWords)
-
-        if x == "END":
-            
-            return wordsToCheck
-        else:
-            return x
-
 def common_member(a, b): 
     a_set = set(a) 
     b_set = set(b) 
@@ -100,71 +61,138 @@ def common_member(a, b):
     else: 
         return False
 
-def doubleFind(startWords, endWords, seenStartWords, seenEndWords):
-    leftWTC = getWordsToCheck(startWords, seenStartWords, True)
+def smartFind(startWords, endWords, seenStartWords, seenEndWords, i, startTime, s, e):
+    cWords = startWords
+    cSeenWords = seenStartWords
+    cw = s
+    oWords = endWords
+    oSeenWords = seenEndWords
+    ow = e
+    order = True
 
-    x = common_member(leftWTC, endWords)
-    if x:
-        x = list(x)[0]
-        end = time.time()
-        print(end-start)
-        return (leftWTC[x] + x + " " + endWords[x])
-    
-    rightWTC = getWordsToCheck(endWords, seenEndWords, False)
-    print(len(leftWTC), " ", len(rightWTC))
-    if len(rightWTC) == 0:
-        return False
-    x = common_member(leftWTC, rightWTC)
-    if x:
-        x = list(x)[0]
-        end = time.time()
-        print(end-start)
-        return (leftWTC[x] + x + " " + rightWTC[x])
-    else:
-        seenStartWords.extend(list(leftWTC.keys()))
-        seenEndWords.extend(list(rightWTC.keys()))
-        return doubleFind(leftWTC, rightWTC, seenStartWords, seenEndWords)
-    
-
-
-def smartFind(startWords, endWords, seenStartWords, seenEndWords, i):
-    correctWords = endWords
-    correctSeenWords = seenEndWords
-    otherWords = startWords
-    otherSeenWords = seenStartWords
-    order = False
-
-    if len(startWords) < len(endWords): #Start with the list of words thats shorter
-        correctWords = startWords
-        correctSeenWords = seenStartWords
-        otherWords = endWords
-        otherSeenWords = seenEndWords
-        order = True
+    if len(startWords) > len(endWords): #Start with the list of words thats shorter
+        cWords = endWords
+        cSeenWords = seenEndWords
+        cw = e
+        oWords = startWords
+        oSeenWords = seenStartWords
+        ow = s
+        order = False
         
     if len(startWords) == 0 or len(endWords) == 0:
         return False
     
-    wtc = getWordsToCheck(correctWords, correctSeenWords, order)
+    wtc = getWordsToCheck(cWords, cSeenWords, order)
+    #wtc = dict(sorted(wtc.items(), key=lambda word: different(word[0], ow), reverse=True))
+    #wtc = sorted(wtc, key=lambda word: different(word, ow), reverse=True)
 
     i += 1
-    print("Step ", i, " ", round(time.time()-start, 2))
+    #print("Step " + str(i), str(len(wtc)) + " words", round(time.time()-start, 2))
     
     if len(wtc) == 0:
         return False
     
-    x = common_member(wtc, otherWords)
+    x = common_member(wtc, oWords)
     if x:
         x = list(x)[0]
-        print(round(time.time()-start, 2))
-        return wtc[x] + x + " " + otherWords[x]
-    else:
-        correctSeenWords.extend(list(wtc.keys()))
+        print(round(time.time()-startTime, 2))
+        result = [];
         if order:
-            return smartFind(wtc, otherWords, correctSeenWords, otherSeenWords, i)
+            result = wtc[x] + x + " " + oWords[x]
         else:
-            return smartFind(otherWords, wtc, otherSeenWords, correctSeenWords, i)
+            result = oWords[x] + x + " " + wtc[x]
+        return result[:-1] #.split(" ")
+    else:
+        cSeenWords.extend(list(wtc.keys()))
+        if order:
+            return smartFind(wtc, oWords, cSeenWords, oSeenWords, i, startTime, s, e)
+        else:
+            return smartFind(oWords, wtc, oSeenWords, cSeenWords, i, startTime, s, e)
 
-start = time.time()
-print(smartFind({"stunning" : ""}, {"a" : ""}, [""], [""], 0))
-#print(getWordsToCheck({"expert" : ""}, [""], True))
-#instead of finding one and doing it, find all, add all to list, then find all from there and so on 
+def find(*argv):
+    startingTime = time.time()
+    if len(argv) == 0:
+        return None
+    elif len(argv) == 1:
+        return agrv[0]
+    else:
+        for i in range(len(argv)-1):
+            print(smartFind({argv[i] : ""}, {argv[i+1] : ""}, [""], [""], 0, startingTime, argv[i], argv[i+1]))
+        
+
+def shorter(this, that):
+    if len(this) < len(that):
+        return this, that
+    return that, this
+
+vowels = "aeiouy"
+
+def allConsonants(part):
+    for letter in part:
+        if letter in vowels:
+            return False
+    return True
+
+#reward same letters (vowels, then consonants)
+#reward same letters closer to each other
+#reward pairs of letters next to each other
+#reward pairs of consonants next to each other
+def different(this, that):
+    short, long = shorter(this, that)
+    score = 0
+    for i in range(len(short)):
+        letter = short[i]
+        if letter in long:
+            if letter in vowels:
+                score += 1.5
+            else:
+                score += 1
+        if i < len(short)-1:
+            pair = short[i:i+2]
+            if pair in long:
+                if allConsonants(pair):
+                    score += 3
+                else:
+                    score += 2
+        if i < len(short)-2:
+            trio = short[i:i+3]
+            if trio in long:
+                if allConsonants(trio):
+                    score += 4.5
+                else:
+                    score += 3
+    return score / len(short)
+
+
+
+
+find("chair", "hat")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
