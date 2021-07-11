@@ -9,17 +9,24 @@ Featuring:
  
 Examples:
 
->>> find("otter", "rock")
+```
+find("otter", "rock")
 otter outer router routes routs rots rocs rock 
+```
  - in 0.2 seconds
 
 
->>> find("stunning", "hello")
+
+```
+find("stunning", "hello")
 stunning sunning cunning canning caning casing basing basin basil bail hail hall hallo hello 
+```
  - in 0.53 seconds
  
->>> findLongest("flexing")
+```
+findLongest("flexing")
 flexing fleeing freeing freezing breezing breeding bleeding blending bending beading bearing 
 baring bring bing bang bane bake baked beaked peaked peeked peered petered pestered festered 
 fettered bettered battered bantered cantered catered capered tapered tampered hampered hammered
+```
 36 words in length
