@@ -1,17 +1,13 @@
 import time
+import json
 
-def getWords():
-    print("Retrieving Words")
+with open('theDictionary.txt') as json_file:
     gettingWords = time.time()
-    f = open("words.txt", "r")
-    words = f.readlines()
-    f.close()
-    for i in range(len(words)):
-        words[i] = words[i].rstrip()
+    data = json.load(json_file)
     print("Retrieved Words", time.time()-gettingWords)
-    return words
 
-words = getWords()
+
+words = data.keys()
 alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 def getOutputs(word):
@@ -32,19 +28,14 @@ def getOutputs(word):
                 results.append(newWord)
     return results[1:]
 
-
-            
-
-#Consider not constraining to words to know which is best
-            
-#Divide and conquer
-#Amount of steps to get from word1 to word2 no word requirement
-
 #Get all valid words that are off by one and not in seenWords
 def getWordsToCheck(startingWords, seenWords, order):
     wordsToCheck = {}
     for word in startingWords:
-        neighbors = getOutputs(word)
+        try:
+            neighbors = data[word]
+        except KeyError:
+            neighbors = getOutputs(word)
         for neighbor in neighbors:
             if neighbor not in seenWords:
                 if order:
@@ -83,11 +74,8 @@ def smartFind(startWords, endWords, seenStartWords, seenEndWords, i, startTime, 
         return False
     
     wtc = getWordsToCheck(cWords, cSeenWords, order)
-    #wtc = dict(sorted(wtc.items(), key=lambda word: different(word[0], ow), reverse=True))
-    #wtc = sorted(wtc, key=lambda word: different(word, ow), reverse=True)
-
     i += 1
-    #print("Step " + str(i), str(len(wtc)) + " words", round(time.time()-start, 2))
+    print("Step " + str(i), str(len(wtc)) + " words", round(time.time()-startTime, 2))
     
     if len(wtc) == 0:
         return False
@@ -108,6 +96,7 @@ def smartFind(startWords, endWords, seenStartWords, seenEndWords, i, startTime, 
             return smartFind(wtc, oWords, cSeenWords, oSeenWords, i, startTime, s, e)
         else:
             return smartFind(oWords, wtc, oSeenWords, cSeenWords, i, startTime, s, e)
+
 
 def find(*argv):
     startingTime = time.time()
@@ -165,12 +154,19 @@ def different(this, that):
 
 
 
-
-find("chair", "hat")
-
-
-
-
+def findLongest(startingWords, seenWords = [""]):
+    wordsToCheck = getWordsToCheck(startingWords, seenWords, True)
+    
+    if len(wordsToCheck) == 0:
+        return "END"
+    else:
+        seenWords.extend(list(wordsToCheck.keys()))
+        x = findLongest(wordsToCheck, seenWords)
+        
+    if x == "END":
+        return wordsToCheck
+    else:
+        return x
 
 
 
