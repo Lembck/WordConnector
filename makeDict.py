@@ -1,6 +1,7 @@
 import time
 import json
 
+#read the dictionary
 with open('theDictionary.txt') as json_file:
     gettingWords = time.time()
     data = json.load(json_file)
@@ -10,6 +11,8 @@ with open('theDictionary.txt') as json_file:
 words = data.keys()
 alphabet = "abcdefghijklmnopqrstuvwxyz"
 
+#find all words that are 1 Levenshtein distance away from the given word
+#a brute-force method that tries every possible string and checks if it is a word
 def getOutputs(word):
     results = [word]
     for i in range(len(word)): #remove a letter
@@ -44,7 +47,8 @@ def getWordsToCheck(startingWords, seenWords, order):
                     wordsToCheck[neighbor] = word + " " + startingWords[word]
     return wordsToCheck
 
-def common_member(a, b): 
+#find the common elements in two lists
+def intersect(a, b): 
     a_set = set(a) 
     b_set = set(b) 
     if (a_set & b_set): 
@@ -52,6 +56,8 @@ def common_member(a, b):
     else: 
         return False
 
+#The recursive function with accumulators to loop until a path is found or 
+# all paths are proven to be dead-ends, uses an adapted breadth-first search
 def smartFind(startWords, endWords, seenStartWords, seenEndWords, i, startTime, s, e):
     cWords = startWords
     cSeenWords = seenStartWords
@@ -80,7 +86,7 @@ def smartFind(startWords, endWords, seenStartWords, seenEndWords, i, startTime, 
     if len(wtc) == 0:
         return False
     
-    x = common_member(wtc, oWords)
+    x = intersect(wtc, oWords)
     if x:
         x = list(x)[0]
         print(round(time.time()-startTime, 2))
@@ -97,7 +103,7 @@ def smartFind(startWords, endWords, seenStartWords, seenEndWords, i, startTime, 
         else:
             return smartFind(oWords, wtc, oSeenWords, cSeenWords, i, startTime, s, e)
 
-
+#The main find function that can take in a series of words and find the path between them if it exists
 def find(*argv):
     startingTime = time.time()
     if len(argv) == 0:
@@ -109,51 +115,8 @@ def find(*argv):
             print(smartFind({argv[i] : ""}, {argv[i+1] : ""}, [""], [""], 0, startingTime, argv[i], argv[i+1]))
         
 
-def shorter(this, that):
-    if len(this) < len(that):
-        return this, that
-    return that, this
 
-vowels = "aeiouy"
-
-def allConsonants(part):
-    for letter in part:
-        if letter in vowels:
-            return False
-    return True
-
-#reward same letters (vowels, then consonants)
-#reward same letters closer to each other
-#reward pairs of letters next to each other
-#reward pairs of consonants next to each other
-def different(this, that):
-    short, long = shorter(this, that)
-    score = 0
-    for i in range(len(short)):
-        letter = short[i]
-        if letter in long:
-            if letter in vowels:
-                score += 1.5
-            else:
-                score += 1
-        if i < len(short)-1:
-            pair = short[i:i+2]
-            if pair in long:
-                if allConsonants(pair):
-                    score += 3
-                else:
-                    score += 2
-        if i < len(short)-2:
-            trio = short[i:i+3]
-            if trio in long:
-                if allConsonants(trio):
-                    score += 4.5
-                else:
-                    score += 3
-    return score / len(short)
-
-
-
+#This function is based on find, to identify the word in the english language that is farthest from the given word
 def findLongest(startingWords, seenWords = [""]):
     wordsToCheck = getWordsToCheck(startingWords, seenWords, True)
     
@@ -167,28 +130,3 @@ def findLongest(startingWords, seenWords = [""]):
         return wordsToCheck
     else:
         return x
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
