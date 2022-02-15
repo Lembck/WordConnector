@@ -1,5 +1,5 @@
 # WordConnector
-An exploration of Levenshtein distance
+An exploration of Levenshtein distance (https://github.com/Lembck/WordConnector)
 
 A program to connect words through other words through insertions, deletions, and swaps of a single letter
 
